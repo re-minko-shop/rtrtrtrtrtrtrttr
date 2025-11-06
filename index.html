@@ -4155,9 +4155,21 @@
                 
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cart-item';
+                // Получаем изображение товара
+                const itemImage = (item.images && item.images.length > 0) ? item.images[0] : 
+                                 (item.image && item.image.startsWith('data:image')) ? item.image :
+                                 (item.image && !item.image.startsWith('📦') && !item.image.startsWith('📱') && !item.image.startsWith('💻')) ? item.image :
+                                 '📦';
+                
+                const imageHtml = itemImage.startsWith('data:image') ? 
+                    `<img src="${itemImage}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">` :
+                    itemImage.startsWith('http') ?
+                    `<img src="${itemImage}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" onerror="this.parentElement.innerHTML='${item.image || '📦'}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='2rem';">` :
+                    `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 2rem;">${itemImage}</div>`;
+                
                 cartItem.innerHTML = `
                     <div class="cart-item-info">
-                        <div class="cart-item-image">${item.image}</div>
+                        <div class="cart-item-image">${imageHtml}</div>
                         <div class="cart-item-details">
                             <h4>${item.name}</h4>
                             <p class="cart-item-price">${item.price.toLocaleString()} ₽ за шт.</p>
@@ -4217,9 +4229,22 @@
             wishlist.forEach(item => {
                 const wishlistItem = document.createElement('div');
                 wishlistItem.className = 'cart-item';
+                
+                // Получаем изображение товара
+                const itemImage = (item.images && item.images.length > 0) ? item.images[0] : 
+                                 (item.image && item.image.startsWith('data:image')) ? item.image :
+                                 (item.image && !item.image.startsWith('📦') && !item.image.startsWith('📱') && !item.image.startsWith('💻')) ? item.image :
+                                 '📦';
+                
+                const imageHtml = itemImage.startsWith('data:image') ? 
+                    `<img src="${itemImage}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">` :
+                    itemImage.startsWith('http') ?
+                    `<img src="${itemImage}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" onerror="this.parentElement.innerHTML='${item.image || '📦'}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='2rem';">` :
+                    `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 2rem;">${itemImage}</div>`;
+                
                 wishlistItem.innerHTML = `
                     <div class="cart-item-info">
-                        <div class="cart-item-image">${item.image}</div>
+                        <div class="cart-item-image">${imageHtml}</div>
                         <div class="cart-item-details">
                             <h4>${item.name}</h4>
                             <p>${item.price.toLocaleString()} ₽</p>
@@ -4540,10 +4565,21 @@
             
             const originalPriceHtml = product.originalPrice ? `<span class="old-price">${product.originalPrice.toLocaleString()} ₽</span>` : '';
             
-            const imageUrl = getProductImageUrl(product.category, product.name);
+            // Получаем реальное изображение товара
+            const productImage = (product.images && product.images.length > 0) ? product.images[0] : 
+                                (product.image && product.image.startsWith('data:image')) ? product.image :
+                                (product.image && !product.image.startsWith('📦') && !product.image.startsWith('📱') && !product.image.startsWith('💻')) ? product.image :
+                                getProductImageUrl(product.category, product.name);
+            
+            const imageHtml = productImage.startsWith('data:image') ? 
+                `<img src="${productImage}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;">` :
+                productImage.startsWith('http') ?
+                `<img src="${productImage}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;" onerror="this.parentElement.innerHTML='${product.image || '📦'}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='6rem'; this.parentElement.style.color='#ccc';">` :
+                `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 6rem; color: #ccc;">${productImage}</div>`;
+            
             productDetail.innerHTML = `
-                <div class="product-detail-image" style="background-image: url('${imageUrl}'); background-size: cover; background-position: center;">
-                    <img src="${imageUrl}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 15px;" onerror="this.parentElement.innerHTML='${product.image}'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='6rem'; this.parentElement.style.color='#ccc';">
+                <div class="product-detail-image" style="background-image: ${productImage.startsWith('data:image') || productImage.startsWith('http') ? `url('${productImage}')` : 'none'}; background-size: cover; background-position: center;">
+                    ${imageHtml}
                 </div>
                 <div class="product-detail-info">
                     <h2>${product.name}</h2>
@@ -6567,9 +6603,12 @@
         document.addEventListener('DOMContentLoaded', async function() {
             showLoading();
             
+            let supabaseInitialized = false;
+            let hasError = false;
+            
             try {
                 // Initialize Supabase
-                await initSupabase();
+                supabaseInitialized = await initSupabase();
                 
                 // Load current user
                 const savedUser = localStorage.getItem('currentUser');
@@ -6580,27 +6619,39 @@
                 }
                 
                 // Load products from database
-                const dbProducts = await fetchProductsFromDB();
+                let dbProducts = [];
+                try {
+                    dbProducts = await fetchProductsFromDB();
+                } catch (dbError) {
+                    console.warn('Error fetching products from DB:', dbError);
+                    // Не критично, продолжаем с localStorage
+                }
                 
                 if (dbProducts.length > 0) {
                     products = dbProducts;
                 } else {
                     // Если база пуста, используем начальные товары
                     products = initialProducts;
-                    // Сохраняем в базу
-                    for (const product of initialProducts) {
-                        try {
-                            await saveProductToDB(product);
-                        } catch (e) {
-                            console.log('Product already exists or error:', e);
+                    // Сохраняем в базу только если Supabase инициализирован
+                    if (supabaseInitialized && initialProducts.length > 0) {
+                        for (const product of initialProducts) {
+                            try {
+                                await saveProductToDB(product);
+                            } catch (e) {
+                                console.log('Product already exists or error:', e);
+                            }
                         }
                     }
                 }
                 
                 // Load users from database
-                const dbUsers = await fetchUsersFromDB();
-                if (dbUsers.length > 0) {
-                    users = dbUsers;
+                try {
+                    const dbUsers = await fetchUsersFromDB();
+                    if (dbUsers.length > 0) {
+                        users = dbUsers;
+                    }
+                } catch (dbError) {
+                    console.warn('Error fetching users from DB:', dbError);
                 }
                 
                 // Load user products into main products
@@ -6627,18 +6678,33 @@
                 }, 500);
                 
                 hideLoading();
-                showNotification('Добро пожаловать в Re - Minko!', 'success');
+                if (!hasError) {
+                    showNotification('Добро пожаловать в Re - Minko!', 'success');
+                }
             } catch (error) {
                 console.error('Initialization error:', error);
+                hasError = true;
                 hideLoading();
-                showNotification('Ошибка загрузки данных. Используется локальное хранилище.', 'warning');
+                
+                // Показываем предупреждение только если это критическая ошибка
+                if (error.message && !error.message.includes('TABLE_NOT_EXISTS') && !error.message.includes('PGRST116')) {
+                    showNotification('Ошибка загрузки данных. Используется локальное хранилище.', 'warning');
+                }
                 
                 // Fallback на localStorage
-                products = JSON.parse(localStorage.getItem('products')) || initialProducts;
-                filteredProducts = [...products];
-                // Всегда вызываем displayProducts для правильного управления видимостью секций
-                displayProducts(products);
-                updateProductCounter();
+                try {
+                    products = JSON.parse(localStorage.getItem('products')) || initialProducts;
+                    filteredProducts = [...products];
+                    // Всегда вызываем displayProducts для правильного управления видимостью секций
+                    displayProducts(products);
+                    updateProductCounter();
+                } catch (fallbackError) {
+                    console.error('Fallback error:', fallbackError);
+                    products = initialProducts;
+                    filteredProducts = [...products];
+                    displayProducts(products);
+                    updateProductCounter();
+                }
             }
         });
         
@@ -6904,22 +6970,35 @@
                     }
                     
                     // Преобразуем данные из Supabase в формат приложения
-                    return (data || []).map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        description: item.description,
-                        price: parseFloat(item.price),
-                        originalPrice: item.original_price ? parseFloat(item.original_price) : null,
-                        category: item.category,
-                        subcategory: item.subcategory,
-                        image: item.image,
-                        stock: item.stock,
-                        rating: item.rating,
-                        badge: item.badge,
-                        sellerId: item.seller_id,
-                        sellerName: item.seller_name,
-                        createdAt: item.created_at
-                    }));
+                    return (data || []).map(item => {
+                        // Парсим images если это JSON строка
+                        let images = [];
+                        if (item.images) {
+                            try {
+                                images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
+                            } catch (e) {
+                                images = Array.isArray(item.images) ? item.images : [];
+                            }
+                        }
+                        
+                        return {
+                            id: item.id,
+                            name: item.name,
+                            description: item.description,
+                            price: parseFloat(item.price),
+                            originalPrice: item.original_price ? parseFloat(item.original_price) : null,
+                            category: item.category,
+                            subcategory: item.subcategory,
+                            image: item.image || (images.length > 0 ? images[0] : '📦'),
+                            images: images.length > 0 ? images : (item.image && item.image.startsWith('data:image') ? [item.image] : []),
+                            stock: item.stock,
+                            rating: item.rating || 0,
+                            badge: item.badge,
+                            sellerId: item.seller_id,
+                            sellerName: item.seller_name,
+                            createdAt: item.created_at || item.createdAt
+                        };
+                    });
                 } else {
                     // Fallback: используем localStorage
                     return JSON.parse(localStorage.getItem('products')) || [];
@@ -6941,7 +7020,8 @@
                         original_price: product.originalPrice || null,
                         category: product.category,
                         subcategory: product.subcategory || null,
-                        image: product.image || '📦',
+                        image: product.image || (product.images && product.images.length > 0 ? product.images[0] : '📦'),
+                        images: product.images && product.images.length > 0 ? JSON.stringify(product.images) : null,
                         stock: product.stock || 0,
                         rating: product.rating || 0,
                         badge: product.badge || null,
