@@ -3786,7 +3786,7 @@
             </div>
             <div class="cart-total" id="cartTotal">
                 <h3>Итого: 0 ₽</h3>
-                <button class="checkout-btn" onclick="proceedToCheckout()">Оформить заказ</button>
+                <!-- Кнопка оформления заказа удалена - покупка через чат с продавцом -->
             </div>
         </div>
     </div>
@@ -4125,30 +4125,37 @@
     <div class="modal" id="escrowPaymentModal">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <h3>Оплата через эскроу</h3>
+                <h3>💳 Защищенная система оплаты</h3>
                 <button class="close-modal" onclick="closeEscrowPaymentModal()">&times;</button>
             </div>
             <div id="escrowPaymentContent">
-                <div style="background: #e3f2fd; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
-                    <h4>Как работает эскроу:</h4>
-                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                        <li>Вы переводите деньги на счет сайта</li>
-                        <li>Средства замораживаются до получения товара</li>
-                        <li>После подтверждения получения деньги переводятся продавцу</li>
-                        <li>Это защищает от мошенничества</li>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <h4 style="margin: 0 0 1rem 0; color: white;">🛡️ Защищенная система оплаты</h4>
+                    <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: white;">
+                        <li>💰 Средства замораживаются на защищенном счете</li>
+                        <li>🔒 Деньги хранятся до подтверждения получения товара</li>
+                        <li>✅ После получения товара средства автоматически переводятся продавцу</li>
+                        <li>🛡️ Полная защита от мошенничества</li>
+                        <li>📋 Каждая транзакция имеет уникальный ID</li>
+                        <li>⚡ Мгновенное уведомление всех участников</li>
                     </ul>
                 </div>
-                <div style="margin-bottom: 1rem;">
-                    <label for="escrowAmount">Сумма к оплате:</label>
-                    <input type="number" id="escrowAmount" name="escrowAmount" readonly style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; background: #f5f5f5;" aria-label="Сумма к оплате через эскроу">
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #856404;">
+                        <strong>⚠️ Демо-режим:</strong> Это заглушка системы оплаты. В реальной версии здесь будет интеграция с платежными системами (Stripe, PayPal, банковские карты и т.д.).
+                    </p>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <label for="escrowPaymentMethod">Ваш способ оплаты:</label>
-                    <select id="escrowPaymentMethod" name="escrowPaymentMethod" required style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px;" aria-label="Способ оплаты через эскроу" title="Выберите способ оплаты">
+                    <label for="escrowAmount" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Сумма к оплате:</label>
+                    <input type="number" id="escrowAmount" name="escrowAmount" readonly style="width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #667eea; border-radius: 8px; background: #f5f5f5; font-size: 1.2rem; font-weight: 600; text-align: center;" aria-label="Сумма к оплате через эскроу">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="escrowPaymentMethod" style="font-weight: 600; display: block; margin-bottom: 0.5rem;">Ваш способ оплаты:</label>
+                    <select id="escrowPaymentMethod" name="escrowPaymentMethod" required style="width: 100%; padding: 12px; margin-top: 5px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem;" aria-label="Способ оплаты через эскроу" title="Выберите способ оплаты">
                         <option value="">Выберите способ оплаты</option>
                     </select>
                 </div>
-                <button onclick="processEscrowPayment()" class="checkout-btn">Оплатить через эскроу</button>
+                <button onclick="processEscrowPayment()" class="checkout-btn" style="width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 600;">💳 Оплатить через защищенную систему</button>
             </div>
         </div>
     </div>
@@ -4307,7 +4314,7 @@
                         </div>
                         <div class="product-buttons">
                             <button class="add-to-cart" onclick="addToCart(${product.id})">В корзину</button>
-                            <button class="buy-now" onclick="buyNow(${product.id})">Купить</button>
+                            <button class="buy-now" onclick="buyNow(${product.id})">💬 Связаться</button>
                         </div>
                     </div>
                 `;
@@ -4936,7 +4943,7 @@
                         <span class="cart-total-amount">${(totalWithCommission || 0).toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₽</span>
                     </div>
                 </div>
-                <button class="checkout-btn" onclick="proceedToCheckout()">Оформить заказ</button>
+                <!-- Кнопка оформления заказа удалена - покупка через чат с продавцом -->
             `;
         }
 
@@ -5481,7 +5488,7 @@
                         </div>
                         <div class="product-detail-actions" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                             <button class="add-to-cart btn-primary" onclick="addToCart(${product.id})" style="flex: 1; padding: 14px; font-size: 16px; font-weight: 600;">🛒 В корзину</button>
-                            <button class="buy-now btn-primary" onclick="buyNow(${product.id})" style="flex: 1; padding: 14px; font-size: 16px; font-weight: 600; background: #ff9900;">Купить сейчас</button>
+                            <button class="buy-now btn-primary" onclick="buyNow(${product.id})" style="flex: 1; padding: 14px; font-size: 16px; font-weight: 600; background: #ff9900;">💬 Связаться с продавцом и купить</button>
                         </div>
                         <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                             <button onclick="toggleWishlist(${product.id}, event)" class="btn-secondary" style="flex: 1; padding: 10px; font-size: 14px;">
@@ -5506,10 +5513,10 @@
             if (productModal) productModal.style.display = 'none';
         }
 
-        // Buy now
+        // Contact seller and buy
         function buyNow(productId) {
             if (!currentUser) {
-                showNotification('Необходимо войти в аккаунт для покупки', 'warning');
+                showNotification('Необходимо войти в аккаунт для связи с продавцом', 'warning');
                 showLoginModal();
                 return;
             }
@@ -5525,11 +5532,16 @@
                 return;
             }
             
+            // Добавляем товар в корзину для истории
+            addToCart(productId);
+            
             // Открываем чат с продавцом
             openChat(product.sellerId, productId);
             
-            // Добавляем товар в корзину для истории
-            addToCart(productId);
+            // Закрываем модальное окно товара если открыто
+            closeProductModal();
+            
+            showNotification('Чат с продавцом открыт! Обсудите детали покупки.', 'success');
         }
 
         // Compare product
@@ -6114,9 +6126,7 @@
                                 </div>
                                 ${order.status === 'pending' || order.status === 'processing' ? `
                                     <div style="margin-top: 0.5rem;">
-                                        <button onclick="showTrackingModal(${order.id})" class="stat-btn" style="background: #ff9900; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
-                                            📦 Указать отслежку
-                                        </button>
+                                        <!-- Отслежка теперь добавляется в чате с покупателем -->
                                     </div>
                                 ` : order.trackingNumber ? `
                                     <div style="margin-top: 0.5rem; font-size: 12px; color: #666;">
@@ -7136,11 +7146,18 @@
                             }
                             transition: transform 0.2s;
                         `;
+                        // Проверяем, есть ли ссылки в сообщении
+                        let messageText = message.text;
+                        const urlRegex = /(https?:\/\/[^\s]+)/g;
+                        if (urlRegex.test(messageText)) {
+                            messageText = messageText.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: ' + (isOwn ? '#fff' : '#667eea') + '; text-decoration: underline;">$1</a>');
+                        }
+                        
                         messageDiv.innerHTML = `
                             <div style="font-weight: 600; margin-bottom: 6px; font-size: 0.85rem; opacity: ${isOwn ? '0.9' : '0.7'};">
                                 ${isOwn ? 'Вы' : 'Продавец'}
                             </div>
-                            <div style="line-height: 1.5; word-wrap: break-word;">${message.text}</div>
+                            <div style="line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;">${messageText}</div>
                             <div style="font-size: 0.75rem; opacity: ${isOwn ? '0.8' : '0.6'}; margin-top: 8px; text-align: ${isOwn ? 'right' : 'left'};">
                                 ${new Date(message.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                             </div>
@@ -7155,21 +7172,24 @@
                 if (currentChat.escrowStatus === 'none' && currentChat.buyerId === currentUser.id) {
                     chatActions.style.display = 'block';
                     chatActions.innerHTML = `
-                        <button onclick="initiateEscrowPayment()" class="checkout-btn" style="background: #4CAF50;">
-                            💳 Оплатить через эскроу
+                        <button onclick="initiateEscrowPayment()" class="checkout-btn" style="background: #4CAF50; width: 100%; margin-bottom: 0.5rem;">
+                            💳 Оплатить через защищенную систему
                         </button>
                     `;
                 } else if (currentChat.escrowStatus === 'paid' && currentChat.sellerId === currentUser.id) {
                     chatActions.style.display = 'block';
                     chatActions.innerHTML = `
-                        <button onclick="confirmDelivery()" class="checkout-btn" style="background: #2196F3;">
+                        <button onclick="showAddTrackingLink()" class="checkout-btn" style="background: #2196F3; width: 100%; margin-bottom: 0.5rem;">
+                            📦 Добавить ссылку на отслеживание посылки
+                        </button>
+                        <button onclick="confirmDelivery()" class="checkout-btn" style="background: #4CAF50; width: 100%;">
                             ✅ Подтвердить отправку товара
                         </button>
                     `;
                 } else if (currentChat.escrowStatus === 'delivered' && currentChat.buyerId === currentUser.id) {
                     chatActions.style.display = 'block';
                     chatActions.innerHTML = `
-                        <button onclick="confirmReceipt()" class="checkout-btn" style="background: #4CAF50;">
+                        <button onclick="confirmReceipt()" class="checkout-btn" style="background: #4CAF50; width: 100%;">
                             ✅ Подтвердить получение товара
                         </button>
                     `;
@@ -7269,34 +7289,109 @@
                 return;
             }
 
-            // Simulate payment to escrow
+            const product = products.find(p => p.id === currentChat.productId);
+            if (!product) {
+                showNotification('Товар не найден', 'error');
+                return;
+            }
+
+            // Детальная система оплаты (заглушка)
             showLoading();
-            setTimeout(() => {
-                // Add money to escrow balance
-                escrowBalance += currentChat.escrowAmount;
-                localStorage.setItem('escrowBalance', JSON.stringify(escrowBalance));
+            
+            // Симуляция процесса оплаты с пошаговой обработкой
+            const paymentSteps = [
+                { step: 'Проверка способа оплаты...', delay: 500 },
+                { step: 'Подключение к платежному шлюзу...', delay: 800 },
+                { step: 'Проверка баланса...', delay: 600 },
+                { step: 'Резервирование средств...', delay: 700 },
+                { step: 'Создание транзакции...', delay: 500 },
+                { step: 'Замораживание средств на эскроу счете...', delay: 800 }
+            ];
 
-                // Update chat status
-                currentChat.escrowStatus = 'paid';
-                chats = chats.map(c => c.id === currentChat.id ? currentChat : c);
-                localStorage.setItem('chats', JSON.stringify(chats));
+            let currentStep = 0;
+            const processStep = () => {
+                if (currentStep < paymentSteps.length) {
+                    console.log(paymentSteps[currentStep].step);
+                    setTimeout(() => {
+                        currentStep++;
+                        processStep();
+                    }, paymentSteps[currentStep].delay);
+                } else {
+                    // Завершение оплаты
+                    const transactionId = 'TXN-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                    const commission = currentChat.escrowAmount * siteCommission;
+                    const sellerAmount = currentChat.escrowAmount - commission;
+                    
+                    // Add money to escrow balance
+                    escrowBalance += currentChat.escrowAmount;
+                    localStorage.setItem('escrowBalance', JSON.stringify(escrowBalance));
 
-                // Add system message
-                const systemMessage = {
+                    // Create payment record
+                    const paymentRecord = {
+                        id: transactionId,
+                        chatId: currentChat.id,
+                        buyerId: currentUser.id,
+                        sellerId: currentChat.sellerId,
+                        productId: currentChat.productId,
+                        productName: product.name,
+                        amount: currentChat.escrowAmount,
+                        commission: commission,
+                        sellerAmount: sellerAmount,
+                        paymentMethod: paymentMethod.type,
+                        paymentMethodAddress: paymentMethod.address,
+                        status: 'frozen',
+                        createdAt: new Date().toISOString(),
+                        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 дней
+                    };
+                    
+                    let payments = safeParseJSON('payments', []);
+                    payments.push(paymentRecord);
+                    localStorage.setItem('payments', JSON.stringify(payments));
+
+                    // Update chat status
+                    currentChat.escrowStatus = 'paid';
+                    currentChat.paymentId = transactionId;
+                    currentChat.paymentRecord = paymentRecord;
+                    chats = chats.map(c => c.id === currentChat.id ? currentChat : c);
+                    localStorage.setItem('chats', JSON.stringify(chats));
+
+                    // Add system message
+                    const systemMessage = {
+                        id: Date.now(),
+                        senderId: 'system',
+                        text: `💰 Платеж ${currentChat.escrowAmount.toFixed(2)} ₽ успешно заморожен на защищенном эскроу счете.\n📋 ID транзакции: ${transactionId}\n⏳ Ожидайте подтверждения отправки от продавца.`,
+                        timestamp: new Date().toISOString()
+                    };
+                    currentChat.messages.push(systemMessage);
+                    chats = chats.map(c => c.id === currentChat.id ? currentChat : c);
+                    localStorage.setItem('chats', JSON.stringify(chats));
+
+                    hideLoading();
+                    closeEscrowPaymentModal();
+                    openChat(currentChat.sellerId, currentChat.productId);
+                    showNotification(`Платеж успешно заморожен! ID: ${transactionId}`, 'success');
+                }
+            };
+            
+            processStep();
+        }
+
+        function showAddTrackingLink() {
+            const trackingLink = prompt('Вставьте ссылку на отслеживание посылки:');
+            if (trackingLink && trackingLink.trim()) {
+                const message = {
                     id: Date.now(),
-                    senderId: 'system',
-                    text: `💰 Платеж $${currentChat.escrowAmount.toFixed(2)} заморожен на эскроу счете. Ожидайте подтверждения отправки от продавца.`,
+                    senderId: currentUser.id,
+                    text: `📦 Ссылка на отслеживание посылки: ${trackingLink.trim()}`,
                     timestamp: new Date().toISOString()
                 };
-                currentChat.messages.push(systemMessage);
+                currentChat.messages.push(message);
+                currentChat.trackingLink = trackingLink.trim();
                 chats = chats.map(c => c.id === currentChat.id ? currentChat : c);
                 localStorage.setItem('chats', JSON.stringify(chats));
-
-                hideLoading();
-                closeEscrowPaymentModal();
-                openChat(currentChat.sellerId, currentChat.productId);
-                showNotification('Платеж успешно заморожен на эскроу счете!', 'success');
-            }, 2000);
+                loadChatMessages();
+                showNotification('Ссылка на отслеживание добавлена!', 'success');
+            }
         }
 
         function confirmDelivery() {
@@ -7307,10 +7402,11 @@
             localStorage.setItem('chats', JSON.stringify(chats));
 
             // Add system message
+            const trackingInfo = currentChat.trackingLink ? `\n📦 Отслеживание: ${currentChat.trackingLink}` : '';
             const systemMessage = {
                 id: Date.now(),
                 senderId: 'system',
-                text: '📦 Продавец подтвердил отправку товара. После получения подтвердите получение для разблокировки средств.',
+                text: `📦 Продавец подтвердил отправку товара. После получения подтвердите получение для разблокировки средств.${trackingInfo}`,
                 timestamp: new Date().toISOString()
             };
             currentChat.messages.push(systemMessage);
@@ -7331,6 +7427,18 @@
             escrowBalance -= currentChat.escrowAmount;
             localStorage.setItem('escrowBalance', JSON.stringify(escrowBalance));
 
+            // Update payment record
+            if (currentChat.paymentRecord) {
+                let payments = safeParseJSON('payments', []);
+                const paymentIndex = payments.findIndex(p => p.id === currentChat.paymentRecord.id);
+                if (paymentIndex > -1) {
+                    payments[paymentIndex].status = 'completed';
+                    payments[paymentIndex].completedAt = new Date().toISOString();
+                    payments[paymentIndex].sellerReceived = sellerAmount;
+                    localStorage.setItem('payments', JSON.stringify(payments));
+                }
+            }
+
             // Update seller balance
             updateSellerBalance(currentChat.sellerId, sellerAmount);
 
@@ -7339,10 +7447,11 @@
             localStorage.setItem('chats', JSON.stringify(chats));
 
             // Add system message
+            const transactionInfo = currentChat.paymentId ? `\n📋 ID транзакции: ${currentChat.paymentId}` : '';
             const systemMessage = {
                 id: Date.now(),
                 senderId: 'system',
-                text: `✅ Получение подтверждено! Продавец получил $${sellerAmount.toFixed(2)} (комиссия сайта: $${commission.toFixed(2)})`,
+                text: `✅ Получение подтверждено! Продавец получил ${sellerAmount.toFixed(2)} ₽ (комиссия сайта: ${commission.toFixed(2)} ₽)${transactionInfo}`,
                 timestamp: new Date().toISOString()
             };
             currentChat.messages.push(systemMessage);
@@ -7839,7 +7948,7 @@
                             <p style="margin: 1rem 0; line-height: 1.6;">${product.description}</p>
                             <div class="product-buttons" style="margin-top: 1.5rem;">
                                 <button class="add-to-cart" onclick="addToCart(${product.id})">В корзину</button>
-                                <button class="buy-now" onclick="buyNow(${product.id}); this.closest('.modal').remove();">Купить сейчас</button>
+                                <button class="buy-now" onclick="buyNow(${product.id}); this.closest('.modal').remove();">💬 Связаться с продавцом</button>
                             </div>
                         </div>
                     </div>
@@ -8055,7 +8164,7 @@
                 if (typeof handleSupportKeyPress === 'function') window.handleSupportKeyPress = handleSupportKeyPress;
                 if (typeof showNewsletterModal === 'function') window.showNewsletterModal = showNewsletterModal;
                 if (typeof showPaymentMethods === 'function') window.showPaymentMethods = showPaymentMethods;
-                if (typeof proceedToCheckout === 'function') window.proceedToCheckout = proceedToCheckout;
+                if (typeof showAddTrackingLink === 'function') window.showAddTrackingLink = showAddTrackingLink;
                 if (typeof showDiscountedProducts === 'function') window.showDiscountedProducts = showDiscountedProducts;
                 if (typeof showStoreStats === 'function') window.showStoreStats = showStoreStats;
                 if (typeof quickView === 'function') window.quickView = quickView;
