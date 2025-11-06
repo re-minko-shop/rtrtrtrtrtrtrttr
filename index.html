@@ -4129,6 +4129,8 @@
         let escrowBalance = JSON.parse(localStorage.getItem('escrowBalance')) || 0; // Замороженные средства
         let chats = JSON.parse(localStorage.getItem('chats')) || [];
         let currentChat = null;
+        let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
+        let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
 
         // AppState для управления состоянием приложения
         const AppState = {
@@ -4298,6 +4300,9 @@
             updateCartDisplay();
             showNotification('Товар добавлен в корзину!', 'success');
         }
+        
+        // Делаем функции доступными глобально для onclick
+        window.addToCart = addToCart;
 
         // Add to wishlist
         function addToWishlist(productId) {
@@ -6250,19 +6255,22 @@
                         </button>
                     `;
                 } else if (currentChat.escrowStatus === 'paid' && currentChat.sellerId === currentUser.id) {
-                chatActions.style.display = 'block';
-                chatActions.innerHTML = `
-                    <button onclick="confirmDelivery()" class="checkout-btn" style="background: #2196F3;">
-                        ✅ Подтвердить отправку товара
-                    </button>
-                `;
-            } else if (currentChat.escrowStatus === 'delivered' && currentChat.buyerId === currentUser.id) {
-                chatActions.style.display = 'block';
-                chatActions.innerHTML = `
-                    <button onclick="confirmReceipt()" class="checkout-btn" style="background: #4CAF50;">
-                        ✅ Подтвердить получение товара
-                    </button>
-                `;
+                    chatActions.style.display = 'block';
+                    chatActions.innerHTML = `
+                        <button onclick="confirmDelivery()" class="checkout-btn" style="background: #2196F3;">
+                            ✅ Подтвердить отправку товара
+                        </button>
+                    `;
+                } else if (currentChat.escrowStatus === 'delivered' && currentChat.buyerId === currentUser.id) {
+                    chatActions.style.display = 'block';
+                    chatActions.innerHTML = `
+                        <button onclick="confirmReceipt()" class="checkout-btn" style="background: #4CAF50;">
+                            ✅ Подтвердить получение товара
+                        </button>
+                    `;
+                } else {
+                    chatActions.style.display = 'none';
+                }
             } else {
                 chatActions.style.display = 'none';
             }
@@ -6745,11 +6753,6 @@
         }
 
         // ========== NEW ADVANCED FEATURES ==========
-        
-        // Compare Products State
-        let compareList = JSON.parse(localStorage.getItem('compareList')) || [];
-        let recentlyViewed = JSON.parse(localStorage.getItem('recentlyViewed')) || [];
-        
         // Scroll Progress Bar
         window.addEventListener('scroll', function() {
             const scrollProgress = document.getElementById('scrollProgress');
@@ -7063,6 +7066,30 @@
         
         // Update DOMContentLoaded to include carousel initialization
         document.addEventListener('DOMContentLoaded', async function() {
+            // Убеждаемся, что все функции доступны глобально
+            try {
+                window.addToCart = addToCart;
+                window.showSellProductModal = showSellProductModal;
+                window.toggleCart = toggleCart;
+                window.showLoginModal = showLoginModal;
+                window.searchProducts = searchProducts;
+                window.showCategorySubcategories = showCategorySubcategories;
+                window.buyNow = buyNow;
+                window.showProductDetail = showProductDetail;
+                window.toggleWishlist = toggleWishlist;
+                window.updateSubcategoryOptions = updateSubcategoryOptions;
+                window.closeSellProductModal = closeSellProductModal;
+                window.handleSellProduct = handleSellProduct;
+                window.openChat = openChat;
+                window.closeChatModal = closeChatModal;
+                window.sendMessage = sendMessage;
+                window.handleChatKeyPress = handleChatKeyPress;
+                window.acceptChat = acceptChat;
+                window.openChatFromNotification = openChatFromNotification;
+            } catch(e) {
+                console.error('Error initializing global functions:', e);
+            }
+            
             showLoading();
             
             let supabaseInitialized = false;
@@ -8254,6 +8281,32 @@
             };
         }
 
+        // Делаем все функции доступными глобально для onclick
+        // Выполняется после определения всех функций
+        (function() {
+            try {
+                if (typeof showSellProductModal === 'function') window.showSellProductModal = showSellProductModal;
+                if (typeof toggleCart === 'function') window.toggleCart = toggleCart;
+                if (typeof showLoginModal === 'function') window.showLoginModal = showLoginModal;
+                if (typeof searchProducts === 'function') window.searchProducts = searchProducts;
+                if (typeof showCategorySubcategories === 'function') window.showCategorySubcategories = showCategorySubcategories;
+                if (typeof buyNow === 'function') window.buyNow = buyNow;
+                if (typeof showProductDetail === 'function') window.showProductDetail = showProductDetail;
+                if (typeof toggleWishlist === 'function') window.toggleWishlist = toggleWishlist;
+                if (typeof updateSubcategoryOptions === 'function') window.updateSubcategoryOptions = updateSubcategoryOptions;
+                if (typeof closeSellProductModal === 'function') window.closeSellProductModal = closeSellProductModal;
+                if (typeof handleSellProduct === 'function') window.handleSellProduct = handleSellProduct;
+                if (typeof openChat === 'function') window.openChat = openChat;
+                if (typeof closeChatModal === 'function') window.closeChatModal = closeChatModal;
+                if (typeof sendMessage === 'function') window.sendMessage = sendMessage;
+                if (typeof handleChatKeyPress === 'function') window.handleChatKeyPress = handleChatKeyPress;
+                if (typeof acceptChat === 'function') window.acceptChat = acceptChat;
+                if (typeof openChatFromNotification === 'function') window.openChatFromNotification = openChatFromNotification;
+            } catch(e) {
+                console.error('Error setting global functions:', e);
+            }
+        })();
+        
         // Инициализация дополнительных функций при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             // Добавляем кнопку сортировки если её нет
