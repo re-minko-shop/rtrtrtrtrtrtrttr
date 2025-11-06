@@ -3734,7 +3734,7 @@
                         </div>
                         <div class="form-group">
                             <label for="productCategory">Категория *</label>
-                            <select id="productCategory" name="productCategory" required aria-label="Категория товара" title="Выберите категорию товара">
+                            <select id="productCategory" name="productCategory" required aria-label="Категория товара" title="Выберите категорию товара" onchange="updateSubcategoryOptions()">
                                 <option value="">Выберите категорию</option>
                                 <option value="electronics">Электроника</option>
                                 <option value="clothing">Одежда</option>
@@ -3742,6 +3742,12 @@
                                 <option value="sports">Спорт и отдых</option>
                                 <option value="beauty">Красота</option>
                                 <option value="books">Книги</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="productSubcategory">Подкатегория *</label>
+                            <select id="productSubcategory" name="productSubcategory" required aria-label="Подкатегория товара" title="Выберите подкатегорию товара" disabled>
+                                <option value="">Сначала выберите категорию</option>
                             </select>
                         </div>
                     </div>
@@ -3991,7 +3997,20 @@
             productsGrid.innerHTML = '';
 
             if (productsToShow.length === 0) {
-                return; // Не показываем сообщение, просто скрываем секцию
+                // Показываем сообщение о том, что товаров нет
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'empty-products-message';
+                emptyMessage.style.cssText = 'text-align: center; padding: 4rem 2rem; background: #f8f9fa; border-radius: 12px; margin: 2rem 0;';
+                emptyMessage.innerHTML = `
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #0f1111;">Товаров в этой категории пока нет</h3>
+                    <p style="color: #666; margin-bottom: 2rem; font-size: 1rem;">Станьте первым продавцом и выложите свой товар!</p>
+                    <button onclick="showSellProductModal()" class="btn-primary" style="background: #ff9900; color: white; padding: 1rem 2rem; font-size: 1.1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        📦 Выложить товар
+                    </button>
+                `;
+                productsGrid.appendChild(emptyMessage);
+                return;
             }
 
             productsToShow.forEach(product => {
@@ -5268,6 +5287,74 @@
         function closeSellProductModal() {
             document.getElementById('sellProductModal').style.display = 'none';
         }
+        
+        // Update subcategory options based on selected category
+        function updateSubcategoryOptions() {
+            const categorySelect = document.getElementById('productCategory');
+            const subcategorySelect = document.getElementById('productSubcategory');
+            const category = categorySelect.value;
+            
+            // Очищаем подкатегории
+            subcategorySelect.innerHTML = '<option value="">Выберите подкатегорию</option>';
+            
+            if (!category) {
+                subcategorySelect.disabled = true;
+                return;
+            }
+            
+            // Определяем подкатегории для каждой категории
+            const subcategories = {
+                'electronics': [
+                    { value: 'phones', label: '📱 Смартфоны' },
+                    { value: 'laptops', label: '💻 Ноутбуки' },
+                    { value: 'tablets', label: '📱 Планшеты' },
+                    { value: 'headphones', label: '🎧 Наушники' },
+                    { value: 'cameras', label: '📷 Фотоаппараты' }
+                ],
+                'clothing': [
+                    { value: 'men', label: '👔 Мужская' },
+                    { value: 'women', label: '👗 Женская' },
+                    { value: 'kids', label: '👶 Детская' },
+                    { value: 'shoes', label: '👟 Обувь' },
+                    { value: 'accessories', label: '👜 Аксессуары' }
+                ],
+                'home': [
+                    { value: 'furniture', label: '🛋️ Мебель' },
+                    { value: 'kitchen', label: '🍳 Кухня' },
+                    { value: 'decor', label: '🖼️ Декор' },
+                    { value: 'appliances', label: '⚡ Техника для дома' },
+                    { value: 'garden', label: '🌳 Сад' }
+                ],
+                'sports': [
+                    { value: 'fitness', label: '💪 Фитнес' },
+                    { value: 'outdoor', label: '🏕️ Туризм' },
+                    { value: 'water', label: '🏊 Водный спорт' },
+                    { value: 'winter', label: '⛷️ Зимний спорт' }
+                ],
+                'beauty': [
+                    { value: 'cosmetics', label: '💄 Косметика' },
+                    { value: 'skincare', label: '🧴 Уход за кожей' },
+                    { value: 'perfume', label: '🌸 Парфюмерия' },
+                    { value: 'hair', label: '💇 Уход за волосами' }
+                ],
+                'books': [
+                    { value: 'fiction', label: '📚 Художественная литература' },
+                    { value: 'nonfiction', label: '📖 Научная литература' },
+                    { value: 'children', label: '📗 Детские книги' },
+                    { value: 'textbooks', label: '📕 Учебники' }
+                ]
+            };
+            
+            const categorySubcategories = subcategories[category] || [];
+            categorySubcategories.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.value;
+                option.textContent = sub.label;
+                subcategorySelect.appendChild(option);
+            });
+            
+            subcategorySelect.disabled = false;
+        }
 
         // Handle sell product with database save
         async function handleSellProduct(event) {
@@ -5290,11 +5377,19 @@
                 productImages = (await Promise.all(imagePromises)).filter(img => img !== null);
             }
 
+            // Проверяем обязательные поля
+            const subcategory = document.getElementById('productSubcategory')?.value;
+            if (!subcategory) {
+                showNotification('Пожалуйста, выберите подкатегорию товара', 'warning');
+                hideLoading();
+                return;
+            }
+            
             const productData = {
                 id: Date.now(),
                 name: document.getElementById('productName').value,
                 category: document.getElementById('productCategory').value,
-                subcategory: document.getElementById('productSubcategory')?.value || null,
+                subcategory: subcategory,
                 price: parseFloat(document.getElementById('productPrice').value),
                 stock: parseInt(document.getElementById('productStock').value),
                 discount: parseInt(document.getElementById('productDiscount').value) || 0,
