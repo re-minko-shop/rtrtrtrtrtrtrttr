@@ -6396,10 +6396,28 @@
                 
                 // Add to local arrays
                 const finalProduct = savedProduct || productData;
-                products.push(finalProduct);
-                userProducts.push(finalProduct);
+                
+                // Проверяем, нет ли уже такого товара
+                const existingIndex = products.findIndex(p => p.id === finalProduct.id);
+                if (existingIndex > -1) {
+                    products[existingIndex] = finalProduct;
+                } else {
+                    products.push(finalProduct);
+                }
+                
+                // Добавляем в userProducts
+                const userProductIndex = userProducts.findIndex(p => p.id === finalProduct.id);
+                if (userProductIndex > -1) {
+                    userProducts[userProductIndex] = finalProduct;
+                } else {
+                    userProducts.push(finalProduct);
+                }
+                
+                // Сохраняем в localStorage
                 localStorage.setItem('userProducts', JSON.stringify(userProducts));
                 localStorage.setItem('products', JSON.stringify(products));
+                
+                console.log(`✅ Товар сохранен: ${finalProduct.name} (ID: ${finalProduct.id})`);
                 
                 // Update display
                 filteredProducts = [...products];
@@ -8077,26 +8095,49 @@
                 let dbProducts = [];
                 try {
                     dbProducts = await fetchProductsFromDB();
+                    console.log(`📦 Загружено товаров из базы: ${dbProducts.length}`);
                 } catch (dbError) {
-                    console.warn('Error fetching products from DB:', dbError);
-                    // Не критично, продолжаем с localStorage
+                    console.error('❌ Ошибка загрузки товаров из базы:', dbError);
+                    // Пробуем загрузить из localStorage
+                    dbProducts = safeParseJSON('products', []);
+                    console.log(`📦 Загружено товаров из localStorage: ${dbProducts.length}`);
                 }
                 
-                if (dbProducts.length > 0) {
-                    products = dbProducts;
-                } else {
-                    // Если база пуста, используем начальные товары
-                    products = initialProducts;
-                    // Сохраняем в базу только если Supabase инициализирован
-                    if (supabaseInitialized && initialProducts.length > 0) {
-                        for (const product of initialProducts) {
-                            try {
-                                await saveProductToDB(product);
-                            } catch (e) {
-                                console.log('Product already exists or error:', e);
-                            }
-                        }
+                // Объединяем товары из базы и localStorage (убираем дубликаты)
+                const allProducts = [];
+                const productIds = new Set();
+                
+                // Сначала добавляем товары из базы
+                dbProducts.forEach(product => {
+                    if (product && product.id && !productIds.has(product.id)) {
+                        allProducts.push(product);
+                        productIds.add(product.id);
                     }
+                });
+                
+                // Затем добавляем товары из localStorage, которых нет в базе
+                const localProducts = safeParseJSON('products', []);
+                localProducts.forEach(product => {
+                    if (product && product.id && !productIds.has(product.id)) {
+                        allProducts.push(product);
+                        productIds.add(product.id);
+                    }
+                });
+                
+                // Добавляем userProducts, которых нет в общем списке
+                userProducts.forEach(product => {
+                    if (product && product.id && !productIds.has(product.id)) {
+                        allProducts.push(product);
+                        productIds.add(product.id);
+                    }
+                });
+                
+                products = allProducts;
+                console.log(`✅ Всего товаров загружено: ${products.length}`);
+                
+                // Сохраняем все товары в localStorage для синхронизации
+                if (products.length > 0) {
+                    localStorage.setItem('products', JSON.stringify(products));
                 }
                 
                 // Load users from database
@@ -8108,14 +8149,6 @@
                 } catch (dbError) {
                     console.warn('Error fetching users from DB:', dbError);
                 }
-                
-                // Load user products into main products (все товары видны всем)
-                // userProducts уже должны быть в products из базы, но на всякий случай добавляем
-                userProducts.forEach(product => {
-                    if (!products.find(p => p.id === product.id)) {
-                        products.push(product);
-                    }
-                });
                 
                 filteredProducts = [...products];
                 // Всегда вызываем displayProducts для правильного управления видимостью секций
@@ -8434,58 +8467,73 @@
         // Database Functions
         async function fetchProductsFromDB() {
             try {
-                if (supabase) {
-                    const { data, error } = await supabase
-                        .from('products')
-                        .select('*')
-                        .order('created_at', { ascending: false });
-                    
-                    if (error) {
-                        // Если таблица не существует, возвращаем пустой массив
-                        if (error.code === 'PGRST116' || error.code === '42P01') {
-                            console.log('📋 Таблица products не существует. Создайте таблицы согласно SUPABASE_SETUP.md');
-                            return [];
+                if (!supabase) {
+                    console.log('⚠️ Supabase не инициализирован, загружаем из localStorage');
+                    const localProducts = safeParseJSON('products', []);
+                    return localProducts;
+                }
+                
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    // Если таблица не существует, возвращаем из localStorage
+                    if (error.code === 'PGRST116' || error.code === '42P01') {
+                        console.log('📋 Таблица products не существует, используем localStorage');
+                        const localProducts = safeParseJSON('products', []);
+                        return localProducts;
+                    }
+                    console.error('❌ Ошибка загрузки товаров из Supabase:', error);
+                    // Fallback на localStorage
+                    const localProducts = safeParseJSON('products', []);
+                    return localProducts;
+                }
+                
+                // Преобразуем данные из Supabase в формат приложения
+                const products = (data || []).map(item => {
+                    // Парсим images если это JSON строка
+                    let images = [];
+                    if (item.images) {
+                        try {
+                            images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
+                        } catch (e) {
+                            images = Array.isArray(item.images) ? item.images : [];
                         }
-                        throw error;
                     }
                     
-                    // Преобразуем данные из Supabase в формат приложения
-                    return (data || []).map(item => {
-                        // Парсим images если это JSON строка
-                        let images = [];
-                        if (item.images) {
-                            try {
-                                images = typeof item.images === 'string' ? JSON.parse(item.images) : item.images;
-                            } catch (e) {
-                                images = Array.isArray(item.images) ? item.images : [];
-                            }
-                        }
-                        
-                        return {
-                            id: item.id,
-                            name: item.name,
-                            description: item.description,
-                            price: parseFloat(item.price),
-                            originalPrice: item.original_price ? parseFloat(item.original_price) : null,
-                            category: item.category,
-                            subcategory: item.subcategory,
-                            image: item.image || (images.length > 0 ? images[0] : '📦'),
-                            images: images.length > 0 ? images : (item.image && item.image.startsWith('data:image') ? [item.image] : []),
-                            stock: item.stock,
-                            rating: item.rating || 0,
-                            badge: item.badge,
-                            sellerId: item.seller_id,
-                            sellerName: item.seller_name,
-                            createdAt: item.created_at || item.createdAt
-                        };
-                    });
-                } else {
-                    // Fallback: используем localStorage
-                    return JSON.parse(localStorage.getItem('products')) || [];
+                    return {
+                        id: item.id,
+                        name: item.name || 'Без названия',
+                        description: item.description || '',
+                        price: parseFloat(item.price) || 0,
+                        originalPrice: item.original_price ? parseFloat(item.original_price) : null,
+                        category: item.category || 'other',
+                        subcategory: item.subcategory || null,
+                        image: item.image || (images.length > 0 ? images[0] : '📦'),
+                        images: images.length > 0 ? images : (item.image && item.image.startsWith('data:image') ? [item.image] : ['📦']),
+                        stock: parseInt(item.stock) || 0,
+                        rating: parseFloat(item.rating) || 0,
+                        badge: item.badge || null,
+                        sellerId: item.seller_id || null,
+                        sellerName: item.seller_name || null,
+                        createdAt: item.created_at || new Date().toISOString()
+                    };
+                });
+                
+                // Сохраняем в localStorage для офлайн режима
+                if (products.length > 0) {
+                    localStorage.setItem('products', JSON.stringify(products));
+                    console.log(`✅ Загружено ${products.length} товаров из Supabase`);
                 }
+                
+                return products;
             } catch (error) {
-                console.error('Error fetching products:', error);
-                return JSON.parse(localStorage.getItem('products')) || [];
+                console.error('❌ Ошибка загрузки товаров:', error);
+                // Fallback: используем localStorage
+                const localProducts = safeParseJSON('products', []);
+                return localProducts;
             }
         }
 
@@ -8525,28 +8573,52 @@
                     
                     // Преобразуем обратно в формат приложения
                     const saved = data[0];
-                    return {
+                    const savedProduct = {
                         ...product,
                         id: saved.id,
-                        createdAt: saved.created_at
+                        createdAt: saved.created_at || new Date().toISOString()
                     };
+                    
+                    console.log(`✅ Товар сохранен в Supabase: ${savedProduct.name} (ID: ${savedProduct.id})`);
+                    return savedProduct;
                 } else {
                     // Fallback: localStorage
-                    const products = JSON.parse(localStorage.getItem('products')) || [];
-                    products.push(product);
+                    console.log('⚠️ Supabase не доступен, сохраняем в localStorage');
+                    const products = safeParseJSON('products', []);
+                    const productWithId = {
+                        ...product,
+                        id: product.id || Date.now() + Math.random()
+                    };
+                    products.push(productWithId);
                     localStorage.setItem('products', JSON.stringify(products));
-                    return product;
+                    console.log(`✅ Товар сохранен в localStorage: ${productWithId.name} (ID: ${productWithId.id})`);
+                    return productWithId;
                 }
             } catch (error) {
                 if (error.message === 'TABLE_NOT_EXISTS') {
                     // Используем localStorage как fallback
-                    const products = JSON.parse(localStorage.getItem('products')) || [];
-                    products.push(product);
+                    console.log('⚠️ Таблица не существует, сохраняем в localStorage');
+                    const products = safeParseJSON('products', []);
+                    const productWithId = {
+                        ...product,
+                        id: product.id || Date.now() + Math.random()
+                    };
+                    products.push(productWithId);
                     localStorage.setItem('products', JSON.stringify(products));
-                    return product;
+                    console.log(`✅ Товар сохранен в localStorage: ${productWithId.name} (ID: ${productWithId.id})`);
+                    return productWithId;
                 }
-                console.error('Error saving product:', error);
-                throw error;
+                console.error('❌ Ошибка сохранения товара:', error);
+                // Все равно сохраняем в localStorage
+                const products = safeParseJSON('products', []);
+                const productWithId = {
+                    ...product,
+                    id: product.id || Date.now() + Math.random()
+                };
+                products.push(productWithId);
+                localStorage.setItem('products', JSON.stringify(products));
+                console.log(`✅ Товар сохранен в localStorage (fallback): ${productWithId.name} (ID: ${productWithId.id})`);
+                return productWithId;
             }
         }
 
